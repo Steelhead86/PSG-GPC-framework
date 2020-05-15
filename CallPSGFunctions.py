@@ -194,7 +194,7 @@ def ScanLine(file,line,parameters,nlayersinit,mmw):
 
         # Diameter of the object here. Currently set to be a multiple of Earth radius.
         if '<OBJECT-DIAMETER>' in line:
-            line = '<OBJECT-DIAMETER>'+str(2*Rp*u.earthRad.to(u.m))+'\n' 
+            line = '<OBJECT-DIAMETER>'+str(2*Rp*u.earthRad.to(u.km))+'\n' 
             break
 
         # Third category: Surface. For handling surface properties of the planet.
