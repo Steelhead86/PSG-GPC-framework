@@ -527,14 +527,14 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
                     bottomGood = False
                 if i >= baseIndex - cloudCoreLayers and i <= baseIndex: # Core section.
                     coreGood = False
-                if i > baseIndex + cloudCoreLayers: # Top section.
+                if i > baseIndex: # Top section.
                     topGood = False
-
 
         # Check if we're done and exit the loop if we are.
         if len(badLayerList) == 0:
             ReasonableClouds = True # All good, clouds are reasonable.
             break
+        
 
         # If we made it this far, there must be layers that need to be adjusted.
         #
@@ -561,7 +561,7 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
 
         # We handle the below-the-cloud region in the second loop. The layers are run in reverse order in this loop, for indexing reasons.
         # To avoid indexing issues, we only address these layers if the core region is confirmed "good".
-        if coregood and not bottomGood:
+        if coreGood and not bottomGood:
             for i in badLayerList[::-1]:
                 # The extra if statement avoids working unintended layers.
                 if i < baseIndex - cloudCoreLayers:
@@ -581,7 +581,7 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
 
         # We handle the above-the-cloud region in the third loop. We no longer need to run these in reverse order.
         # To avoid indexing issues, we only address these layers if the core and bottom regions are confirmed "good".
-        if coregood and bottomgood and not topgood:
+        if coreGood and bottomGood and not topGood:
             for i in badLayerList:
                 # The extra if statement avoids working unintended layers.
                 if i > baseIndex:
