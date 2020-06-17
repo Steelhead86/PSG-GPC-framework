@@ -422,26 +422,33 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
     PowerSet = np.zeros(len(structure)-1)
     # Many if statements in this loop, as there are numerous 'regions' in this structure..
     for i in range(len(PowerSet)):
+
         # At very low altitudes, there are no clouds.
         if i < baseIndex-4-cloudCoreLayers-1:
             PowerSet[i] = 0
+
         # Just above the "very low altitudes", the clouds are very thin.
         if i == baseIndex-4-cloudCoreLayers: 
             PowerSet[i] = 10**-10
+
         # Clouds fade in as we approach the bottom of the cloud deck.
         if i >= (baseIndex-4-cloudCoreLayers) and i < baseIndex-cloudCoreLayers:
             PowerSet[i] = fade**(baseIndex-i)
+
         # Within the core of the cloud, full density clouds.
         if i >= baseIndex-cloudCoreLayers and i <= (baseIndex):
             PowerSet[i] = 10**0
+
         # Above the top of the clouds, the clouds fade away again for some layers.
         if i > (baseIndex) and PowerSet[i-1] > 10**-7: 
             PowerSet[i] = fade**(i-baseIndex)
+
         # Beyond a certain point, we start checking for the clouds to vanish.
         if i > baseIndex and PowerSet[i-1] <= 10**-7:
             # Once the clouds are thin enough, they vanish.
             if PowerSet[i-1] <= 10**-9:
                 PowerSet[i] = 0
+
             # Otherwise, make them thin enough. The transition should be subtle enough to not cause issues.
             else:
                 PowerSet[i] = 10**-9
@@ -458,10 +465,13 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
     # transfer through the layer at high angles of incidence (close to the limb). Influenced by DAngles.
     tauCrit = math.cos( (np.pi/2.0)*(2*DAngles-1.0)/(2*DAngles) ) 
     # Now, some more general bookkeeping.
+
     # Reassign the pressure level at the baseIndex to be exactly equal to the cloud top pressure.
-    structure[baseIndex+1][0] = Pc
+    structure[baseIndex+1:][0] += structure[baseIndex+1][0] - Pc
+
     # Placeholder pressure structure for manipulation in the subsequent loop.
     Pstruct = [ i[0] for i in structure ]
+
     # Extract surface pressure for computational purposes.
     P0 = structure[0][0]
     # Move total mass out of log space kg/m2
@@ -540,24 +550,33 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
         #
         # These loops adjust cloud layers. Any layer which is too optically thick, will be split into two layers. The new layer will have a pressure
         # level calculated halfway between the flagged layer and the next-lowest-pressure layer.
+
+
         # We handle the cloud core region in the first loop. The layers are run in reverse order in this loop, for indexing reasons.
         if not coreGood:
             for i in badLayerList[::-1]:
                 # The extra if statement avoids working unintended layers.
                 if i >= baseIndex - cloudCoreLayers and i <= baseIndex:
                     # This layer is in the core.
+
                     # Calculate the new pressure.
-                    newP = (structure[i][0]+structure[i+1][0])/2.
+                    newP = np.sqrt(structure[i][0] * structure[i+1][0])
+                    # newP = 10**((np.log10(structure[i][0])+np.log10(structure[i+1][0]))/2.)
+
                     # Insert our new pressure level into the atmosphere structure.
                     structure.insert(i+1,[newP,T]) 
+
                     # The aerosol density of the new level will be calculated similarly to the new pressure; here, we calculate that density.
                     # Note that in the core, the density at PowerSet[i] and PowerSet[i+1] will often be the same.
-                    newPwr = (PowerSet[i]+PowerSet[i+1])/2.
+                    newPwr = np.sqrt(PowerSet[i] * PowerSet[i+1])
+
                     # Insert the new power number into power set for next loop.
                     PowerSet = np.insert(PowerSet,i+1,newPwr)
+
                     # The core of the cloud now covers one addional layer; account for this.
                     # NOTE: Shouldn't the cloud top layer also change?
                     cloudCoreLayers += 1
+
 
         # We handle the below-the-cloud region in the second loop. The layers are run in reverse order in this loop, for indexing reasons.
         # To avoid indexing issues, we only address these layers if the core region is confirmed "good".
@@ -567,11 +586,11 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
                 if i < baseIndex - cloudCoreLayers:
                     # This layer is under the core.
                     # Calculate the new pressure.
-                    newP = (structure[i][0]+structure[i+1][0])/2.
+                    newP = np.sqrt(structure[i][0] * structure[i+1][0])
                     # Insert our new pressure level into the atmosphere structure.
                     structure.insert(i+1,[newP,T])
                     # The aerosol density of the new level will be calculated similarly to the new pressure; here, we calculate that density.
-                    newPwr = (PowerSet[i]+PowerSet[i+1])/2.
+                    newPwr = np.sqrt(PowerSet[i] * PowerSet[i+1])
                     # Insert the new power number into power set for next loop.
                     PowerSet = np.insert(PowerSet,i+1,newPwr)
                     # The index of the cloud top layer goes up by one when we insert a new layer below it.
@@ -587,11 +606,11 @@ def BuildClouds(Pc,totalMass,structure,mmw,fade,T):
                 if i > baseIndex:
                     # This layer is under the core.
                     # Calculate the new pressure.
-                    newP = (structure[i][0]+structure[i+1][0])/2.
+                    newP = np.sqrt(structure[i][0] * structure[i+1][0])
                     # Insert our new pressure level into the atmosphere structure.
                     structure.insert(i+1,[newP,T])
                     # The aerosol density of the new level will be calculated similarly to the new pressure; here, we calculate that density.
-                    newPwr = (PowerSet[i]+PowerSet[i+1])/2.
+                    newPwr = np.sqrt(PowerSet[i] * PowerSet[i+1])
                     # Insert the new power number into power set for next loop.
                     PowerSet = np.insert(PowerSet,i+1,newPwr)
                     # We break because we moved some indexes of potentially-bad cloud layers. If we continued, we could have indexing issues.
