@@ -103,7 +103,7 @@ if 'clear' in cloudstate:
         
         P0 = round(10**P0,3) # move pressure out of log space
         # create the configuration file
-        sys.stdout.write(' '+str(iterator)+': '+MakeCFG(filename,R,g,P0,As,atm,1,1,1,clouds)+'        ')
+        sys.stdout.write(' '+str(iterator)+': '+MakeCFG(filename,[R,g,P0,As,atm,1,1,1,clouds,1,T])+'        ')
         sys.stdout.write('\r')
         sys.stdout.flush()
         configList.append(filename) # add it to the future joblist
@@ -131,7 +131,7 @@ if 'haze' in cloudstate:
         # move pressure out of log space    
         P0 = round(10**P0,3)
         # create the configuration file
-        sys.stdout.write(' '+str(iterator)+': '+MakeCFG(filename,R,g,P0,As,atm,rcld,lcld,1,clouds,fade=fade)+'        ')
+        sys.stdout.write(' '+str(iterator)+': '+MakeCFG(filename,[R,g,P0,As,atm,rcld,lcld,1,clouds,fade,T])+'        ')
         sys.stdout.write('\r')
         sys.stdout.flush()
         configList.append(filename) # add it to the future joblist
